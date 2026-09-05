@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Мой сайт</title>
+<title>My Site</title>
 <style>
   html, body {
     margin: 0;
@@ -94,9 +94,9 @@
   /* Кнопка справа от персонажа, дрожит */
   #startButton {
     position: absolute;
-    left: 1630px;
-    top: 520px;
-    width: 220px;
+    left: 1260px;
+    top: 280px;
+    width: 660px;
     height: auto;
     cursor: pointer;
     animation: shake 0.28s infinite;
@@ -193,7 +193,7 @@
         <img id="blink2" class="character" src="blink2.png" alt="">
       </div>
 
-      <img id="startButton" src="button.png" alt="Начать">
+      <img id="startButton" src="button.png" alt="Start">
     </div>
 
     <div class="answer-panel hidden" id="answerPanel">
@@ -242,11 +242,8 @@
     }
 
     function showResult(win) {
-      resultMessage.textContent = win ? 'Правильно!' : 'Неправильно! Игра окончена.';
-      resultMessage.className = 'result-message ' + (win ? 'win' : 'lose');
       answerPanel.classList.add('hidden');
-
-      setTimeout(resetGame, 1800);
+      setTimeout(resetGame, 1200);
     }
 
     startButton.addEventListener('click', startGame);
