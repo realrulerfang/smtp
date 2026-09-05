@@ -27,8 +27,8 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 1280px;
-    height: 720px;
+    width: 1920px;
+    height: 1080px;
     transform-origin: center center;
     /* scale подставляется скриптом ниже */
   }
@@ -37,8 +37,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 1280px;
-    height: 720px;
+    width: 1920px;
+    height: 1080px;
     object-fit: cover;
   }
 
@@ -50,10 +50,10 @@
   /* Персонаж — точные координаты и размер как в макете (800x600) */
   .character {
     position: absolute;
-    left: 256px;  /* 20% от 1280 */
-    top: 130px;   /* 18% от 720 */
-    width: 800px;
-    height: 600px;
+    left: 384px;  /* 20% от 1920 */
+    top: 195px;   /* 18% от 1080 */
+    width: 1200px; /* сохранена пропорция макета (было 800 из 1280) */
+    height: 900px; /* сохранена пропорция макета (было 600 из 720) */
     object-fit: contain;
     object-position: bottom center;
   }
@@ -106,8 +106,8 @@
     const canvas = document.getElementById('canvas');
     function fitCanvas() {
       const scale = Math.max(
-        window.innerWidth / 1280,
-        window.innerHeight / 720
+        window.innerWidth / 1920,
+        window.innerHeight / 1080
       );
       canvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
     }
