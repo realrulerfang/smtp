@@ -11,6 +11,7 @@
     height: 100%;
     overflow: hidden;
     background: #000;
+    font-family: Arial, sans-serif;
   }
 
   .viewport {
@@ -19,8 +20,7 @@
     overflow: hidden;
   }
 
-  /* ФОН — просто тянется на весь экран (cover), никакого JS не нужно,
-     всегда без полос по бокам, как было изначально */
+  /* ФОН — тянется на весь экран, без полос */
   .bg {
     position: fixed;
     inset: 0;
@@ -34,10 +34,8 @@
     animation: flashBg 15.2s linear infinite;
   }
 
-  /* ПЕРСОНАЖ — отдельный слой поверх фона, сам вписывается целиком (contain),
-     поэтому никогда не обрезается. У его PNG прозрачный фон, так что
-     свободное место вокруг него не закрашивается, а сквозь него виден
-     настоящий фон сайта (без вставок/полос). */
+  /* Холст персонажа + кнопки — вписывается целиком, никогда не обрезается,
+     всё внутри масштабируется вместе одним JS-скриптом */
   .char-canvas {
     position: fixed;
     top: 50%;
@@ -45,26 +43,29 @@
     width: 1920px;
     height: 1080px;
     transform-origin: center center;
-    pointer-events: none;
     /* scale подставляется скриптом ниже */
   }
 
   .character {
     position: absolute;
-    left: 384px;   /* 20% от 1920 */
-    top: 195px;    /* 18% от 1080 */
+    left: 384px;
+    top: 195px;
     width: 1200px;
     height: 900px;
     object-fit: contain;
     object-position: bottom center;
   }
 
-  #right {
+  /* Наборы персонажа: pen-набор и nopen-набор.
+     Видим всегда только один — они не мешают друг другу. */
+  .char-set.hidden { display: none; }
+
+  #right, #right2 {
     opacity: 0;
     animation: flashRight 5s linear infinite;
   }
 
-  #blink {
+  #blink, #blink2 {
     opacity: 0;
     animation: flashBlink 3s linear infinite;
   }
@@ -89,6 +90,86 @@
     96.8%    { opacity: 1; }
     100%     { opacity: 1; }
   }
+
+  /* Кнопка справа от персонажа, дрожит */
+  #startButton {
+    position: absolute;
+    left: 1630px;
+    top: 520px;
+    width: 220px;
+    height: auto;
+    cursor: pointer;
+    animation: shake 0.28s infinite;
+    transform-origin: center center;
+  }
+
+  #startButton.hidden { display: none; }
+
+  @keyframes shake {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    20%  { transform: translate(-2px, 1px) rotate(-1.5deg); }
+    40%  { transform: translate(2px, -1px) rotate(1.5deg); }
+    60%  { transform: translate(-2px, -1px) rotate(-1deg); }
+    80%  { transform: translate(2px, 1px) rotate(1deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+
+  /* Панель с вариантами ответа */
+  .answer-panel {
+    position: fixed;
+    left: 50%;
+    bottom: 6%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 18px;
+    z-index: 50;
+  }
+
+  .answer-panel.hidden { display: none; }
+
+  .plate {
+    background: linear-gradient(180deg, #e9d8ad, #c9a45c);
+    border: 3px solid #6b4a24;
+    border-radius: 10px;
+    padding: 14px 22px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #3a2a10;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    user-select: none;
+    transition: transform 0.15s ease;
+  }
+
+  .plate:hover {
+    transform: translateY(-4px) scale(1.05);
+  }
+
+  /* Сообщение о результате */
+  .result-message {
+    position: fixed;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 18px 34px;
+    font-size: 2rem;
+    font-weight: bold;
+    border-radius: 12px;
+    z-index: 60;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+  }
+
+  .result-message.hidden { display: none; }
+
+  .result-message.win {
+    background: rgba(30, 140, 60, 0.9);
+    color: #fff;
+  }
+
+  .result-message.lose {
+    background: rgba(160, 30, 30, 0.9);
+    color: #fff;
+  }
 </style>
 </head>
 <body>
@@ -97,24 +178,85 @@
     <img id="bg2" class="bg" src="background2.jpg" alt="">
 
     <div class="char-canvas" id="charCanvas">
-      <img id="pen"   class="character" src="pen.png"   alt="">
-      <img id="right" class="character" src="right.png" alt="">
-      <img id="blink" class="character" src="blink.png" alt="">
+
+      <!-- Набор "с ручкой" -->
+      <div class="char-set" id="penSet">
+        <img id="pen"   class="character" src="pen.png"   alt="">
+        <img id="right" class="character" src="right.png" alt="">
+        <img id="blink" class="character" src="blink.png" alt="">
+      </div>
+
+      <!-- Набор "без ручки" (после нажатия кнопки) -->
+      <div class="char-set hidden" id="nopenSet">
+        <img id="nopen"  class="character" src="nopen.png"  alt="">
+        <img id="right2" class="character" src="right2.png" alt="">
+        <img id="blink2" class="character" src="blink2.png" alt="">
+      </div>
+
+      <img id="startButton" src="button.png" alt="Начать">
     </div>
+
+    <div class="answer-panel hidden" id="answerPanel">
+      <div class="plate" data-value="1000">1000$</div>
+      <div class="plate" data-value="100">100$</div>
+      <div class="plate" data-value="10">10$</div>
+      <div class="plate" data-value="1">1$</div>
+    </div>
+
+    <div class="result-message hidden" id="resultMessage"></div>
   </div>
 
   <script>
-    const charCanvas = document.getElementById('charCanvas');
-    function fitChar() {
-      // Math.min = "вписать целиком" — персонаж никогда не обрезается
+    const charCanvas   = document.getElementById('charCanvas');
+    const startButton  = document.getElementById('startButton');
+    const penSet       = document.getElementById('penSet');
+    const nopenSet      = document.getElementById('nopenSet');
+    const answerPanel  = document.getElementById('answerPanel');
+    const resultMessage = document.getElementById('resultMessage');
+
+    const CORRECT_ANSWER = '10';
+
+    function fitCanvas() {
       const scale = Math.min(
         window.innerWidth / 1920,
         window.innerHeight / 1080
       );
       charCanvas.style.transform = `translate(-50%, -50%) scale(${scale})`;
     }
-    window.addEventListener('resize', fitChar);
-    fitChar();
+    window.addEventListener('resize', fitCanvas);
+    fitCanvas();
+
+    function resetGame() {
+      nopenSet.classList.add('hidden');
+      penSet.classList.remove('hidden');
+      answerPanel.classList.add('hidden');
+      resultMessage.classList.add('hidden');
+      startButton.classList.remove('hidden');
+    }
+
+    function startGame() {
+      startButton.classList.add('hidden');
+      penSet.classList.add('hidden');
+      nopenSet.classList.remove('hidden');
+      answerPanel.classList.remove('hidden');
+    }
+
+    function showResult(win) {
+      resultMessage.textContent = win ? 'Правильно!' : 'Неправильно! Игра окончена.';
+      resultMessage.className = 'result-message ' + (win ? 'win' : 'lose');
+      answerPanel.classList.add('hidden');
+
+      setTimeout(resetGame, 1800);
+    }
+
+    startButton.addEventListener('click', startGame);
+
+    document.querySelectorAll('.plate').forEach(plate => {
+      plate.addEventListener('click', () => {
+        const value = plate.getAttribute('data-value');
+        showResult(value === CORRECT_ANSWER);
+      });
+    });
   </script>
 </body>
 </html>
