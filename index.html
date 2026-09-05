@@ -13,11 +13,25 @@
     background: #000;
   }
 
-  /* Внешний контейнер = весь экран, без полос */
+  /* Внешний контейнер = весь экран */
   .viewport {
     position: fixed;
     inset: 0;
     overflow: hidden;
+  }
+
+  /* Размытая подложка того же фона — заполняет пустые поля
+     по краям, если пропорции экрана отличаются от 16:9,
+     чтобы не было чёрных полос */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    background-image: url("background1.png");
+    background-size: cover;
+    background-position: center;
+    filter: blur(40px) brightness(0.55);
+    transform: scale(1.15);
+    z-index: 0;
   }
 
   /* Холст фиксированного размера 1280x720 —
@@ -30,6 +44,7 @@
     width: 1920px;
     height: 1080px;
     transform-origin: center center;
+    z-index: 1;
     /* scale подставляется скриптом ниже */
   }
 
@@ -92,6 +107,7 @@
 </head>
 <body>
   <div class="viewport">
+    <div class="backdrop"></div>
     <div class="canvas" id="canvas">
       <img id="bg1" class="layer" src="background1.png" alt="">
       <img id="bg2" class="layer" src="background2.jpg" alt="">
@@ -105,7 +121,9 @@
   <script>
     const canvas = document.getElementById('canvas');
     function fitCanvas() {
-      const scale = Math.max(
+      // Math.min = "вписать целиком" (contain), сцена никогда не обрезается.
+      // Пустые поля по краям закрывает размытая .backdrop.
+      const scale = Math.min(
         window.innerWidth / 1920,
         window.innerHeight / 1080
       );
