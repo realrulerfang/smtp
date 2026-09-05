@@ -10,10 +10,26 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: #000;
+  }
+
+  /* Контейнер держит пропорцию фона 1280x720 (16:9),
+     чтобы персонаж всегда стоял на своём месте независимо от размера экрана */
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 56.25vw;      /* 720/1280 */
+    max-height: 100vh;
+    max-width: 177.78vh;  /* 1280/720 */
+    margin: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
   }
 
   .bg {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -32,20 +48,73 @@
     background-image: url("background2.jpg");
     z-index: 2;
     opacity: 0;
-    animation: flash 15.2s linear infinite;
+    animation: flashBg 15.2s linear infinite;
   }
 
-  /* Цикл 15.2с: bg2 невидим 15с, виден 0.2с */
-  @keyframes flash {
-    0%     { opacity: 0; }
-    98.68% { opacity: 0; }
-    98.69% { opacity: 1; }
-    100%   { opacity: 1; }
+  /* Персонаж и его варианты — позиция и размер как на макете */
+  .character {
+    position: absolute;
+    left: 20%;
+    top: 18%;
+    width: 62.5%;   /* 800px из 1280px */
+    height: 83.33%; /* 600px из 720px */
+    background-size: contain;
+    background-position: bottom center;
+    background-repeat: no-repeat;
+  }
+
+  #pen {
+    background-image: url("pen.png");
+    z-index: 10;
+  }
+
+  #right {
+    background-image: url("right.png");
+    z-index: 11;
+    opacity: 0;
+    animation: flashRight 5s linear infinite;
+  }
+
+  #blink {
+    background-image: url("blink.png");
+    z-index: 12;
+    opacity: 0;
+    animation: flashBlink 3s linear infinite;
+  }
+
+  /* Фон2 виден 0.2с из 15.2с цикла */
+  @keyframes flashBg {
+    0%      { opacity: 0; }
+    98.68%  { opacity: 0; }
+    98.69%  { opacity: 1; }
+    100%    { opacity: 1; }
+  }
+
+  /* right.png виден 0.2с из 5с */
+  @keyframes flashRight {
+    0%    { opacity: 0; }
+    96%   { opacity: 0; }
+    96.1% { opacity: 1; }
+    100%  { opacity: 1; }
+  }
+
+  /* blink.png виден 0.1с из 3с */
+  @keyframes flashBlink {
+    0%       { opacity: 0; }
+    96.67%   { opacity: 0; }
+    96.8%    { opacity: 1; }
+    100%     { opacity: 1; }
   }
 </style>
 </head>
 <body>
-  <div id="bg1" class="bg"></div>
-  <div id="bg2" class="bg"></div>
+  <div class="stage">
+    <div id="bg1" class="bg"></div>
+    <div id="bg2" class="bg"></div>
+
+    <div id="pen" class="character"></div>
+    <div id="right" class="character"></div>
+    <div id="blink" class="character"></div>
+  </div>
 </body>
 </html>
